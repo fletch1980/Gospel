@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Four Gospels — Bible Study Hub</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a1a; font-family: system-ui, sans-serif; min-height: 100vh; padding: 20px 16px 60px; color: white; }
+
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; color: #a78bfa; font-size: 13px; text-decoration: none; margin-bottom: 20px; }
+    .back-btn:hover { color: white; }
+
+    .plan-header { text-align: center; margin-bottom: 24px; }
+    .plan-header .icon { font-size: 40px; margin-bottom: 8px; }
+    .plan-header h1 { font-size: 22px; font-weight: 900; }
+    .plan-header p { font-size: 13px; color: #9ca3af; margin-top: 4px; }
+    .progress-wrap { margin: 14px auto 0; max-width: 320px; }
+    .progress-track { background: rgba(255,255,255,0.1); border-radius: 20px; height: 6px; }
+    .progress-fill { height: 6px; border-radius: 20px; background: #6366f1; transition: width 0.4s; }
+    .progress-label { font-size: 11px; color: #6b7280; margin-top: 5px; text-align: center; }
+
+    /* Notes History button */
+    .notes-btn { width: 100%; margin-bottom: 14px; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: white; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+    .notes-btn:hover { background: rgba(99,102,241,0.15); border-color: #6366f155; }
+
+    /* Day list */
+    .day-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: background 0.15s; }
+    .day-item:hover { background: rgba(99,102,241,0.15); }
+    .day-item.done { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.25); }
+    .check-circle { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #4338ca; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+    .day-item.done .check-circle { background: #22c55e; border-color: #22c55e; }
+    .day-info { flex: 1; min-width: 0; }
+    .day-num { font-size: 10px; color: #6b7280; }
+    .day-passage { font-size: 14px; font-weight: 700; }
+    .day-item.done .day-passage { text-decoration: line-through; color: rgba(255,255,255,0.35); }
+    .day-title { font-size: 11px; color: #a78bfa; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .note-badge { font-size: 10px; color: #6b7280; background: rgba(99,102,241,0.2); border-radius: 20px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; }
+
+    /* Day study view */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .day-header { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+    .day-header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .day-header-meta { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+    .day-header-title { font-size: 20px; font-weight: 900; }
+    .day-header-passage { font-size: 13px; color: #a78bfa; margin-top: 2px; }
+    .done-btn { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1.5px solid #4338ca; color: #a78bfa; background: transparent; cursor: pointer; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
+    .done-btn.is-done { background: #22c55e; border-color: #22c55e; color: white; }
+    .day-focus { font-size: 13px; color: #c7d2fe; line-height: 1.6; margin-top: 12px; }
+
+    .section-card { border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+    .section-card.teaching { background: rgba(67,56,202,0.2); border: 1px solid rgba(99,102,241,0.3); }
+    .section-card.verses   { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .section-card.questions{ background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .section-card.notes    { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .section-card.ai       { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .section-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a78bfa; margin-bottom: 12px; }
+    .teaching-para { font-size: 13px; color: rgba(255,255,255,0.88); line-height: 1.7; margin-bottom: 10px; }
+    .teaching-para:last-child { margin-bottom: 0; }
+    .verse-item { background: rgba(99,102,241,0.15); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; color: #e0e7ff; font-style: italic; line-height: 1.5; }
+    .verse-item:last-child { margin-bottom: 0; }
+    .question-item { display: flex; gap: 10px; margin-bottom: 10px; }
+    .question-item:last-child { margin-bottom: 0; }
+    .q-num { width: 22px; height: 22px; border-radius: 50%; background: #4338ca; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
+    .q-text { font-size: 13px; color: #c7d2fe; line-height: 1.6; }
+
+    /* Notes */
+    .note-entry { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+    .note-text { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.6; }
+    .note-meta { font-size: 10px; color: #6b7280; margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+    .note-delete { background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 0; }
+    .confirm-delete { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 8px 10px; margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+    .confirm-delete span { font-size: 12px; color: #fca5a5; flex: 1; }
+    .confirm-yes { background: #ef4444; border: none; border-radius: 6px; color: white; font-size: 11px; font-weight: 700; padding: 4px 10px; cursor: pointer; }
+    .confirm-no  { background: rgba(255,255,255,0.08); border: none; border-radius: 6px; color: #9ca3af; font-size: 11px; padding: 4px 10px; cursor: pointer; }
+    textarea { width: 100%; background: rgba(10,10,26,0.8); border: 1px solid rgba(99,102,241,0.4); border-radius: 10px; padding: 12px; font-size: 13px; color: white; font-family: system-ui, sans-serif; resize: none; outline: none; margin-top: 4px; }
+    textarea:focus { border-color: #6366f1; }
+    .save-note-btn { width: 100%; margin-top: 8px; padding: 10px; background: #4338ca; border: none; border-radius: 10px; color: white; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .save-note-btn:disabled { opacity: 0.4; cursor: default; }
+    .save-note-btn:hover:not(:disabled) { background: #6366f1; }
+
+    /* AI */
+    .ai-btn { padding: 6px 14px; background: #4338ca; border: none; border-radius: 20px; color: white; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .ai-btn:disabled { opacity: 0.5; cursor: default; }
+    .ai-result { font-size: 13px; color: #c7d2fe; line-height: 1.7; margin-top: 10px; }
+    .ai-placeholder { font-size: 13px; color: #4b5563; font-style: italic; }
+
+    /* History view */
+    .history-entry { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+    .history-day-link { font-size: 11px; color: #a78bfa; font-weight: 700; cursor: pointer; margin-bottom: 6px; }
+    .history-day-link:hover { color: white; }
+    .history-note-text { font-size: 13px; color: rgba(255,255,255,0.88); line-height: 1.6; }
+    .history-note-date { font-size: 10px; color: #6b7280; margin-top: 4px; display: flex; justify-content: space-between; }
+
+    /* Nav */
+    .day-nav { display: flex; gap: 10px; margin-top: 4px; }
+    .nav-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .nav-prev { background: rgba(255,255,255,0.08); color: #9ca3af; }
+    .nav-prev:hover { background: rgba(255,255,255,0.12); }
+    .nav-next { background: #4338ca; color: white; }
+    .nav-next:hover { background: #6366f1; }
+
+    .empty-state { text-align: center; color: #4b5563; padding: 40px 0; font-size: 13px; }
+    .empty-state .e-icon { font-size: 36px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<!-- LIST VIEW -->
+<div id="viewList" class="view active">
+  <a class="back-btn" href="../index.html">← Bible Study Hub</a>
+  <div class="plan-header">
+    <div class="icon">✝️</div>
+    <h1>The Four Gospels</h1>
+    <p>Follow the life and teachings of Jesus through all four accounts</p>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-label" id="progressLabel">0 / 28 days completed</div>
+    </div>
+  </div>
+  <button class="notes-btn" onclick="showHistory()">
+    <span>📝 Notes History</span>
+    <span id="notesCount" style="font-size:11px;color:#6b7280;">0 notes ›</span>
+  </button>
+  <div id="dayList"></div>
+</div>
+
+<!-- DAY VIEW -->
+<div id="viewDay" class="view">
+  <a class="back-btn" href="#" onclick="showList();return false;">← All Days</a>
+  <div class="day-header">
+    <div class="day-header-top">
+      <div>
+        <div class="day-header-meta" id="dayMeta"></div>
+        <div class="day-header-title" id="dayTitle"></div>
+        <div class="day-header-passage" id="dayPassage"></div>
+      </div>
+      <button class="done-btn" id="doneBtn" onclick="toggleDone()"></button>
+    </div>
+    <div class="day-focus" id="dayFocus"></div>
+  </div>
+  <div class="section-card teaching">
+    <div class="section-label">📖 Teaching</div>
+    <div id="dayTeaching"></div>
+  </div>
+  <div class="section-card verses">
+    <div class="section-label">🔑 Key Verses</div>
+    <div id="dayVerses"></div>
+  </div>
+  <div class="section-card questions">
+    <div class="section-label">🤔 Study Questions</div>
+    <div id="dayQuestions"></div>
+  </div>
+  <div class="section-card notes">
+    <div class="section-label">✍️ My Notes</div>
+    <div id="notesList"></div>
+    <textarea id="noteInput" rows="3" placeholder="Write your thoughts, answers, or what God is showing you..."></textarea>
+    <button class="save-note-btn" id="saveNoteBtn" onclick="saveNote()">Save Note</button>
+  </div>
+  <div class="section-card ai">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div class="section-label" style="margin-bottom:0;">✨ Deeper AI Insight</div>
+      <button class="ai-btn" id="aiBtn" onclick="getInsight()">Get Insight</button>
+    </div>
+    <div id="aiResult"><div class="ai-placeholder">Tap "Get Insight" for cross-references, historical context & extra commentary.</div></div>
+  </div>
+  <div class="day-nav">
+    <button class="nav-btn nav-prev" id="prevBtn" onclick="navDay(-1)">← Previous</button>
+    <button class="nav-btn nav-next" id="nextBtn" onclick="navDay(1)">Next Day →</button>
+  </div>
+</div>
+
+<!-- HISTORY VIEW -->
+<div id="viewHistory" class="view">
+  <a class="back-btn" href="#" onclick="showList();return false;">← All Days</a>
+  <h2 style="font-size:18px;font-weight:900;margin-bottom:4px;">📝 Notes History</h2>
+  <p style="font-size:12px;color:#6b7280;margin-bottom:18px;" id="historySubtitle"></p>
+  <div id="historyList"></div>
+</div>
+
+<script>
+var PLAN = {
+  name: "The Four Gospels",
+  storageKey: "gospels-plan-v1",
+  days: [
+    {day:1,passage:"John 1:1–18",title:"The Word Became Flesh",focus:"John opens not with a manger but with eternity. Jesus is the eternal Word of God who steps into human history.",teaching:"John 1:1 deliberately echoes Genesis 1:1 — 'In the beginning.' John is saying: the same God who created everything has now entered creation. Jesus is not a creature — He was there before creation, and everything was made through Him.\n\nThe word 'Word' (Greek: Logos) was loaded with meaning. To Greeks, the Logos was the rational principle holding the universe together. To Jews, the Word of God was God in action. John says: that person has a name — Jesus.\n\nVerse 14 is the hinge of all history: 'The Word became flesh and dwelt among us.' The word 'dwelt' literally means tabernacled — the same way God lived among Israel in the wilderness tent, He now lives in a human body.",keyVerses:["John 1:1 — In the beginning was the Word, and the Word was with God, and the Word was God.","John 1:14 — The Word became flesh and made his dwelling among us.","John 1:18 — No one has ever seen God, but the one and only Son has made him known."],questions:["Why do you think John starts with 'In the beginning' instead of a birth story?","What does it mean that Jesus 'tabernacled' among us?","Verse 12 says we become children of God by receiving Him. What does receiving Jesus mean to you personally?"]},
+    {day:2,passage:"Matthew 1–2",title:"The Birth of the King",focus:"Matthew opens with a genealogy and the birth of Jesus — showing He is the fulfillment of Israel's entire history.",teaching:"Matthew writes to a Jewish audience, so he begins with a genealogy. This isn't boring — it's a bold claim: Jesus is the son of Abraham (the covenant) and the son of David (the kingdom). Every promise God made is fulfilled in this child.\n\nThe genealogy includes five women — unusual for that culture: Tamar, Rahab, Ruth, Bathsheba, and Mary. Four of them had scandalous or surprising stories. Matthew is already hinting: Jesus came for the broken, the outsider, the unexpected.\n\nThe Magi were Gentiles — pagan astrologers from the East. Yet they worship Jesus while Israel's own king tries to kill Him. From the very beginning, the nations are drawn to Jesus.",keyVerses:["Matthew 1:21 — She will give birth to a son, and you are to give him the name Jesus, because he will save his people from their sins.","Matthew 1:23 — The virgin will conceive and give birth to a son, and they will call him Immanuel — God with us.","Matthew 2:11 — They bowed down and worshiped him."],questions:["What does 'Immanuel — God with us' mean to you right now in your own life?","Why do you think God included broken and unlikely people in Jesus' family tree?","The Magi traveled far to worship. What would it look like to pursue Jesus with that kind of dedication?"]},
+    {day:3,passage:"Matthew 5–7",title:"The Sermon on the Mount",focus:"The greatest sermon ever preached. Jesus describes what life in the Kingdom of God actually looks like — and it upends everything.",teaching:"The Sermon on the Mount is Jesus' constitution for the Kingdom. He sits on a mountain like Moses receiving the law, and issues a new standard — not abolishing the law but fulfilling it.\n\nThe Beatitudes (5:3–12) are shocking reversals: blessed are the poor in spirit, the mourning, the meek. The world says blessed are the strong, the successful, the powerful. Jesus flips it completely.\n\nChapter 6 targets hidden religion: giving, prayer, and fasting done to be seen by others is worthless. The Lord's Prayer is given as a pattern — not magic words, but a model of how to approach God.\n\nThe sermon ends with two houses — one on rock, one on sand. The difference is not hearing Jesus' words, but doing them.",keyVerses:["Matthew 5:3 — Blessed are the poor in spirit, for theirs is the kingdom of heaven.","Matthew 5:17 — I have not come to abolish the Law or the Prophets but to fulfill them.","Matthew 7:24 — Everyone who hears these words of mine and puts them into practice is like a wise man who built his house on the rock."],questions:["Which Beatitude challenges you the most — and why?","Jesus says to love your enemies (5:44). Who is the hardest person in your life to love?","Are you building on rock or sand right now? What area of your life needs a firmer foundation?"]},
+    {day:4,passage:"Matthew 13",title:"Parables of the Kingdom",focus:"Jesus teaches in parables — not to confuse but to reveal. Each parable is a window into how the Kingdom of God actually works.",teaching:"Matthew 13 contains 7 parables — a perfect number — all about the Kingdom of God. Jesus explains why He uses parables: those who are seeking will understand; those who are not will miss it.\n\nThe Parable of the Sower is the key to all the others. The seed is the Word of God. The soil is the human heart. Four soils: hard (doesn't receive), shallow (no roots), thorny (choked by worries and wealth), and good (produces fruit). Jesus is asking: what kind of soil are you?\n\nThe mustard seed and leaven show that the Kingdom starts invisibly small and grows to fill everything. Don't despise small beginnings — God specializes in them.",keyVerses:["Matthew 13:11 — The knowledge of the secrets of the kingdom of heaven has been given to you.","Matthew 13:23 — The seed falling on good soil refers to someone who hears the word and understands it.","Matthew 13:31–32 — The kingdom of heaven is like a mustard seed... yet it grows into a tree."],questions:["Which soil best describes your heart right now — and why?","What 'thorns' in your life are most likely to choke out God's word?","How does the mustard seed encourage you about something small God may be doing in your life?"]},
+    {day:5,passage:"Matthew 16–17",title:"Who Is Jesus? The Transfiguration",focus:"Peter confesses Jesus as the Messiah. Then three disciples witness Jesus transformed in glory — a glimpse of who He truly is.",teaching:"Matthew 16:13–20 is a pivotal moment. Jesus asks 'Who do people say I am?' — then 'But who do YOU say I am?' Peter answers: 'You are the Messiah, the Son of the living God.' Jesus says this wasn't Peter's idea — the Father revealed it.\n\nThe Transfiguration (17:1–9): Jesus' face shines like the sun. Moses (the Law) and Elijah (the Prophets) appear — then disappear. Only Jesus remains. The Father says: 'This is my Son... Listen to him.' The whole OT points to Jesus.\n\nPeter wants to stay on the mountain. But Jesus leads them back down. Glory and suffering are always connected in the Gospels.",keyVerses:["Matthew 16:16 — You are the Messiah, the Son of the living God.","Matthew 16:24 — Whoever wants to be my disciple must deny themselves and take up their cross.","Matthew 17:5 — This is my Son, whom I love. Listen to him!"],questions:["Jesus asks 'Who do YOU say I am?' — how would you answer that question today?","What does 'take up your cross daily' look like in your actual, practical life?","Why do you think God said 'Listen to him' — what might He want you to listen to Jesus about right now?"]},
+    {day:6,passage:"Matthew 26–28",title:"The Passion and Resurrection",focus:"The Last Supper, Gethsemane, the cross, and the empty tomb. The climax of Matthew's Gospel — and all of history.",teaching:"The Last Supper (26:17–30): Jesus takes Passover — the meal commemorating Israel's rescue from Egypt — and redefines it around Himself. The bread is His body. The wine is His blood. The new covenant is sealed in His own blood.\n\nGethsemane (26:36–46): Jesus prays 'let this cup pass from me' three times. The 'cup' in the OT is the cup of God's wrath against sin. Jesus is about to drink it fully.\n\nThe cross (27): Darkness covers the land. Jesus cries 'My God, my God, why have you forsaken me?' He is bearing separation from the Father so we never have to.\n\nThe resurrection (28): 'He is not here; he has risen!' The stone is rolled away not to let Jesus out — but to let the witnesses in.",keyVerses:["Matthew 26:28 — This is my blood of the covenant, poured out for many for the forgiveness of sins.","Matthew 27:46 — My God, my God, why have you forsaken me?","Matthew 28:6 — He is not here; he has risen, just as he said.","Matthew 28:19–20 — Go and make disciples of all nations."],questions:["Why is it significant that Jesus used the Passover meal to explain His death?","Jesus was forsaken so that you would never be. How does that land in your heart today?","The Great Commission ends with 'I am with you always.' How does that promise change how you face your week?"]},
+    {day:7,passage:"Mark 1–2",title:"The Authority of Jesus",focus:"Mark's Gospel is fast-paced and action-packed. In two chapters Jesus teaches, heals, casts out demons, and forgives sins — and everyone is astonished.",teaching:"Mark writes for a Roman audience who valued action. His favorite word is 'immediately' — it appears 40+ times. There is urgency to Jesus' ministry in Mark.\n\nIn 1:21–28, Jesus teaches in a synagogue and a demon cries out. The people are astonished — not just at the miracle, but that He teaches 'as one who had authority, not as the teachers of the law.'\n\nThe most radical moment in chapter 2: Jesus forgives a paralyzed man's sins before healing him. The religious leaders ask 'Who can forgive sins but God alone?' That is exactly Jesus' point.",keyVerses:["Mark 1:15 — The kingdom of God has come near. Repent and believe the good news.","Mark 1:27 — What is this? A new teaching — and with authority!","Mark 2:10 — The Son of Man has authority on earth to forgive sins."],questions:["What is the difference between teaching with authority and teaching by quoting others?","Jesus healed the body to prove He could forgive the soul. What does that tell you about what He cares about most?","Mark 1:15 says 'repent and believe.' What does repentance actually look like — not just feeling sorry, but turning?"]},
+    {day:8,passage:"Mark 8–9",title:"The Cost of Following Jesus",focus:"Peter confesses Jesus as Messiah. Jesus immediately explains what that means: a Messiah who suffers. Discipleship costs everything.",teaching:"Mark 8:27–38 is the turning point of the whole Gospel. Peter gets it right: 'You are the Messiah.' But Jesus explains the Messiah must suffer and die. Peter rebukes Him. Jesus rebukes Peter: 'Get behind me, Satan!'\n\nThen comes the most demanding call in the Gospels: 'Whoever wants to be my disciple must deny themselves and take up their cross.' In the Roman world, people who carried crosses were about to die. Jesus is not talking about inconvenience — He is talking about dying to self-rule.\n\nThe Transfiguration follows — God confirming: yes, this suffering Messiah is the Son of God.",keyVerses:["Mark 8:29 — You are the Messiah.","Mark 8:33 — Get behind me, Satan! You do not have in mind the concerns of God, but merely human concerns.","Mark 8:35 — Whoever loses their life for me and for the gospel will save it."],questions:["Why do you think Peter didn't want a suffering Messiah? Do we sometimes do the same?","What in your life are you holding onto that Jesus might be asking you to lose?","What does it practically look like to 'deny yourself' today — in real life, not in theory?"]},
+    {day:9,passage:"Luke 1–2",title:"The Most Detailed Birth Narrative",focus:"Luke, a physician and historian, gives the most thorough account of Jesus' birth — including Mary's song, Zechariah's prophecy, and the shepherds.",teaching:"Luke opens with a dedication to Theophilus — this is careful historical writing. Luke interviewed eyewitnesses, including almost certainly Mary herself.\n\nMary's Magnificat (1:46–55) is revolutionary. She sings about God scattering the proud, bringing down rulers, lifting the humble. This is not a gentle lullaby — it is a declaration that the world order is being overturned.\n\nThe shepherds were considered unreliable witnesses in Jewish courts — low status, unclean work. Yet God announced the birth of His Son to them first. This is Luke's theme: Jesus came for the overlooked and the outcast.",keyVerses:["Luke 1:46–47 — My soul glorifies the Lord and my spirit rejoices in God my Savior.","Luke 2:10–11 — I bring you good news that will cause great joy for all the people. Today a Savior has been born to you.","Luke 2:19 — But Mary treasured up all these things and pondered them in her heart."],questions:["Mary says God lifts the humble and fills the hungry. Where do you need to be 'lifted' or 'filled' right now?","Why do you think God chose shepherds to receive the birth announcement?","Luke 2:19 says Mary 'treasured and pondered.' What is something from God you need to slow down and treasure?"]},
+    {day:10,passage:"Luke 15",title:"Three Parables of the Lost",focus:"A lost sheep, a lost coin, a lost son. Three stories that together give the most complete picture of God's heart in the entire Bible.",teaching:"Jesus tells these parables because the Pharisees are complaining He eats with sinners. His answer is three stories.\n\nThe pattern: something is lost, someone searches, it is found, there is a party. Three times with increasing stakes: 1 of 100 sheep → 1 of 10 coins → 1 of 2 sons.\n\nThe Prodigal Son is actually about two sons. The younger represents open sinners. The older represents the Pharisees — outwardly obedient, inwardly resentful. The father runs to both. The parable ends unanswered: will the older son go in?\n\nThe father does three shocking things: he runs (undignified), he kisses before any apology is finished, and he throws a party. This is God.",keyVerses:["Luke 15:4 — Does he not leave the 99 and go after the lost sheep?","Luke 15:20 — But while he was still a long way off, his father saw him and ran to his son.","Luke 15:32 — This brother of yours was dead and is alive again; was lost and is found."],questions:["The father runs while the son is 'still a long way off.' What does that say about how God responds to repentance?","Which son do you relate to more — the younger (openly rebellious) or the older (outwardly good, inwardly resentful)?","Why do you think Jesus left the older son's story unfinished?"]},
+    {day:11,passage:"Luke 19–20",title:"Triumphal Entry and Temple",focus:"Zacchaeus is transformed. Jesus enters Jerusalem as King. Then He confronts corruption in the Temple. The final week begins.",teaching:"Zacchaeus (19:1–10): a chief tax collector, despised by all. He climbs a tree to see Jesus. Jesus says: 'I must stay at your house today.' Not 'I will' — 'I must.' Jesus pursues the lost with intention.\n\nThe Triumphal Entry (19:28–44): Jesus rides a donkey, fulfilling Zechariah 9:9. The crowd shouts 'Blessed is the king!' But Jesus weeps over Jerusalem — He knows what is coming.\n\nThe Temple cleansing (19:45–46): The Court of the Gentiles — the only place non-Jews could pray — had been turned into a marketplace. Jesus is defending the outsiders' access to God.",keyVerses:["Luke 19:10 — The Son of Man came to seek and to save the lost.","Luke 19:41 — As he approached Jerusalem, he wept over it.","Luke 19:46 — My house will be a house of prayer, but you have made it a den of robbers."],questions:["Jesus said He 'must' go to Zacchaeus — He pursued him. When have you felt pursued by God?","Jesus wept over a city about to reject Him. What does that tell you about His heart?","Is there anything crowding out prayer in your own life the way the marketplace crowded out the Gentiles?"]},
+    {day:12,passage:"Luke 22–24",title:"The Cross and Road to Emmaus",focus:"The Last Supper, Gethsemane, the cross — and Luke's unique account of the risen Jesus walking with two disciples who don't recognize Him.",teaching:"Gethsemane (22:39–46): Only Luke the physician records that Jesus' sweat became 'like drops of blood.' An angel comes to strengthen Him. This is the full humanity of Jesus on display.\n\nThe cross (23): Luke alone records: 'Father, forgive them, for they do not know what they are doing' — and the thief's salvation. Even in agony, Jesus is saving.\n\nThe Road to Emmaus (24:13–35): Two defeated disciples walk away from Jerusalem. Jesus joins them — unrecognized. He walks them through the entire OT showing how it pointed to the Messiah. Their hearts 'burn within them.' They recognize Him in the breaking of bread — and He vanishes.",keyVerses:["Luke 23:34 — Father, forgive them, for they do not know what they are doing.","Luke 23:43 — Truly I tell you, today you will be with me in paradise.","Luke 24:32 — Were not our hearts burning within us while he talked with us on the road?"],questions:["Jesus forgave His executioners in the moment. Is there someone you need to forgive right now?","The thief had nothing to offer — only a prayer. What does his salvation tell you about what God requires?","The disciples recognized Jesus in the breaking of bread. Where do you most clearly encounter Jesus in your own life?"]},
+    {day:13,passage:"John 3:1–21",title:"Born Again",focus:"Nicodemus — one of Israel's greatest teachers — comes to Jesus at night. Jesus tells him: you must be born again.",teaching:"Nicodemus was a Pharisee, a member of the Sanhedrin, a teacher of Israel. Yet Jesus tells him he must be 'born again' — not about improving your life, but receiving an entirely new one.\n\nNicodemus is confused — 'how can I re-enter my mother's womb?' Jesus says this is a spiritual birth. The Holy Spirit does this work. You cannot cause your own rebirth any more than you caused your first birth.\n\nJohn 3:16 — read it slowly. God loved. God gave. Whoever believes. Will not perish. Has eternal life. Five movements. The whole gospel in one sentence.",keyVerses:["John 3:3 — No one can see the kingdom of God unless they are born again.","John 3:16 — For God so loved the world that he gave his one and only Son.","John 3:17 — God did not send his Son to condemn the world, but to save the world through him."],questions:["Why did Jesus tell one of the most religious men in Israel he still needed to be born again?","What is the difference between trying to be a better person and being 'born of the Spirit'?","John 3:17 says Jesus came not to condemn — how does that change how you come to God when you fail?"]},
+    {day:14,passage:"John 4:1–42",title:"The Woman at the Well",focus:"Jesus crosses every social boundary to speak to a Samaritan woman. He offers her 'living water' that will never run dry.",teaching:"Jews didn't speak to Samaritans. Men didn't speak publicly to women. Yet Jesus initiates. He asks her for a drink — letting her serve Him first — then offers something far greater.\n\nThe 'living water' is the Holy Spirit. It satisfies at the deepest level of the human soul. The woman has been filling her emptiness with relationships (5 husbands). Jesus offers what no person can provide.\n\nShe becomes the first evangelist in John's Gospel. She runs to her town and says: 'Come see a man who told me everything I ever did.' Her testimony brings an entire village to Jesus.",keyVerses:["John 4:13–14 — Whoever drinks the water I give them will never thirst again.","John 4:23 — True worshipers will worship the Father in the Spirit and in truth.","John 4:29 — Come, see a man who told me everything I ever did."],questions:["What 'wells' do you return to again and again that never fully satisfy?","Jesus knew everything about her and still offered her living water. How does it feel to know He knows everything about you too?","She ran to tell others despite her shame. What is holding you back from sharing your faith?"]},
+    {day:15,passage:"John 6:1–59",title:"I Am the Bread of Life",focus:"Jesus feeds 5,000 — then explains what the miracle means. He is the true bread from heaven. This teaching is so hard that many walk away.",teaching:"The feeding of the 5,000 is the only miracle in all four Gospels. But John alone records the sermon that follows.\n\nThe crowd follows wanting more bread. Jesus refuses to just be their bread provider: 'I am the bread of life. Whoever comes to me will never go hungry.'\n\nJohn 6:53–58: 'Unless you eat the flesh of the Son of Man and drink his blood, you have no life in you.' He is teaching total dependence. To 'eat' is to take in, to absorb, to make something part of you. Have you absorbed Jesus that completely?",keyVerses:["John 6:35 — I am the bread of life. Whoever comes to me will never go hungry.","John 6:44 — No one can come to me unless the Father draws them.","John 6:68 — Lord, to whom shall we go? You have the words of eternal life."],questions:["Many disciples left after this sermon. What makes you stay when His teaching is hard?","Peter asked 'Where else would we go?' Has Jesus become that irreplaceable to you?","What does it look like to 'feed' on Jesus daily — not just know about Him?"]},
+    {day:16,passage:"John 8–9",title:"I Am the Light of the World",focus:"Jesus declares He is the light of the world — then proves it by giving sight to a man born blind. The miracle is both physical and spiritual.",teaching:"John 8:12: 'I am the light of the world.' Spoken during the Feast of Tabernacles, when giant lampstands lit up all Jerusalem. Jesus says: I am the real light.\n\nJohn 9: Jesus heals a man born blind. The Pharisees refuse to accept it. The man's spiritual sight grows throughout the chapter: first Jesus is 'a man called Jesus,' then 'a prophet,' then 'Lord.' The Pharisees, who can see physically, become spiritually blind.\n\nThe chapter ends with a devastating reversal: the blind man worships Jesus; the men with perfect vision remain in darkness.",keyVerses:["John 8:12 — I am the light of the world. Whoever follows me will never walk in darkness.","John 9:25 — One thing I do know. I was blind but now I see.","John 9:41 — If you were blind, you would not be guilty; but now that you claim you can see, your guilt remains."],questions:["What areas of your life might you be 'blind' to that Jesus wants to open your eyes about?","The healed man's testimony was simple: 'I was blind but now I see.' What is your simple testimony?","The Pharisees' certainty kept them blind. How do you guard against spiritual pride?"]},
+    {day:17,passage:"John 11",title:"I Am the Resurrection and the Life",focus:"Lazarus dies. Jesus waits four days before coming. Then He does the impossible — and speaks the most powerful promise in the Bible.",teaching:"Jesus deliberately waits when He hears Lazarus is sick. John 11:4 explains: 'This sickness will not end in death. No, it is for God's glory.' The delay is not absence — God's timing is not our timing.\n\n'Jesus wept' (11:35) is the shortest verse but one of the deepest. Jesus knew He was about to raise Lazarus. He wept anyway. He entered into the grief of those He loved.\n\nBefore the miracle: 'I am the resurrection and the life. The one who believes in me will live, even though they die.' Then He proves it. This is the seventh and greatest sign in John.",keyVerses:["John 11:25–26 — I am the resurrection and the life. The one who believes in me will live, even though they die.","John 11:35 — Jesus wept.","John 11:43 — Jesus called in a loud voice, 'Lazarus, come out!'"],questions:["Has God ever seemed late in your life — and then shown up in an unexpected way?","Jesus wept even knowing what He was about to do. What does that tell you about how He feels about your pain?","If Jesus has power over death itself, how should that change how you face your greatest fears?"]},
+    {day:18,passage:"John 13–14",title:"Washing Feet and the Way",focus:"The night before His crucifixion, Jesus washes His disciples' feet and says 'I am the way, the truth, and the life.' The most intimate evening in the Gospels.",teaching:"Foot washing (13:1–17) was the work of the lowest servant. Jesus — Lord of the universe — wraps a towel around His waist and washes dirty feet. The message: the greatest among you must be servant of all.\n\nJudas leaves (13:30): 'And it was night.' John is never accidental with details. It was literal night — and the darkest spiritual night.\n\nJohn 14 is spoken to terrified people. His answer: 'Do not let your hearts be troubled.' Three promises: He is preparing a place (v.2), He is the only way to the Father (v.6), and He will send the Holy Spirit forever (v.16).",keyVerses:["John 13:34–35 — A new command: Love one another. By this everyone will know you are my disciples.","John 14:1 — Do not let your hearts be troubled. Believe in God; believe also in me.","John 14:6 — I am the way and the truth and the life."],questions:["Jesus washed feet to show servant leadership. What is a practical way you can serve someone this week?","John 14:6 is an exclusive claim. How do you hold that conviction with grace toward others?","What is troubling your heart right now — and how does Jesus' promise in John 14 speak to it?"]},
+    {day:19,passage:"John 15–16",title:"The Vine and the Spirit",focus:"Jesus teaches about abiding in Him like branches in a vine, then promises the Holy Spirit. Preparing them for life after His departure.",teaching:"The vine image (15:1–17): it is not about doing — it is about remaining. A branch doesn't strain to produce fruit. It stays connected. Fruit is the natural result of connection.\n\n'I am the true vine' — Israel was called God's vine in the OT (Isaiah 5, Psalm 80). But Israel failed. Jesus is the true, faithful vine. Apart from Him, we can do nothing (v.5).\n\nJohn 16:33 — the last thing Jesus says before the cross: 'In this world you will have trouble. But take heart! I have overcome the world.'",keyVerses:["John 15:5 — I am the vine; you are the branches. Apart from me you can do nothing.","John 15:13 — Greater love has no one than this: to lay down one's life for one's friends.","John 16:33 — In this world you will have trouble. But take heart! I have overcome the world."],questions:["What does 'abiding in Jesus' actually look like in your daily schedule and habits?","Jesus calls us friends, not just servants (15:15). How does that change how you relate to Him?","Where in your life do you most need to hear 'take heart — I have overcome'?"]},
+    {day:20,passage:"John 17",title:"Jesus Prays for You",focus:"The night before His death, Jesus prays for His disciples — and for all who will ever believe. You are in this prayer.",teaching:"John 17 is the longest recorded prayer of Jesus. Three movements: He prays for Himself (vv.1–5), for His disciples (vv.6–19), and for all future believers (vv.20–26). You are in verse 20.\n\nJesus prays for unity — 'that they may be one, as we are one' (v.22). The visible unity of the church is meant to be evidence to the world that Jesus was sent by God.\n\nHe prays that we would be with Him where He is (v.24) — to see His glory. Heaven is primarily being with Jesus and seeing His glory.",keyVerses:["John 17:3 — This is eternal life: that they know you, the only true God, and Jesus Christ.","John 17:17 — Sanctify them by the truth; your word is truth.","John 17:24 — Father, I want those you have given me to be with me where I am."],questions:["Jesus defines eternal life as knowing God. What does knowing God look like in your life right now?","Jesus prayed for your unity with other believers. Who is someone you need to reconcile with or pursue?","How does it feel to know Jesus prayed for you specifically — before you were even born?"]},
+    {day:21,passage:"John 18–19",title:"The Trial and Crucifixion",focus:"Arrest, betrayal, three denials, six trials, and the cross. John's account of the passion is the most detailed in all the Gospels.",teaching:"Peter's three denials (18:15–27) are placed right next to Jesus' bold confessions. Jesus says 'I am he' three times. Peter says 'I am not' three times. But grace has the last word — in John 21, Jesus restores Peter three times.\n\nPilate asks 'What is truth?' (18:38) — and walks away from the only person who could answer him.\n\nAt the cross (19), Jesus' legs are not broken — fulfilling Psalm 34:20, making Him the true Passover lamb. John says 'I have seen it, and I testify' — an eyewitness insisting this is real.",keyVerses:["John 18:37 — The reason I was born and came into the world is to testify to the truth.","John 19:30 — It is finished.","John 19:34 — One of the soldiers pierced Jesus' side with a spear, bringing a sudden flow of blood and water."],questions:["Peter denied Jesus three times. Have you ever denied Him — not out loud, but by how you lived?","'It is finished' — the Greek tetelestai was written on paid receipts. What does that mean for your guilt and shame?","John said 'I saw it and I testify.' How important is it to you that the crucifixion was a real, historical event?"]},
+    {day:22,passage:"John 20–21",title:"Resurrection and Restoration",focus:"The empty tomb, Mary in the garden, Thomas and his doubt, and the beautiful restoration of Peter. The Gospel ends not with condemnation but with grace.",teaching:"Mary Magdalene is the first to see the risen Jesus. She mistakes Him for the gardener — until He says her name. One word: 'Mary.' She recognizes Him immediately. Jesus knows each of us by name.\n\nThomas (20:24–29) refuses to believe without physical evidence. Jesus appears and offers His hands and side. Thomas responds: 'My Lord and my God' — the highest confession in the Gospel.\n\nRestoration of Peter (21:15–19): Three times Jesus asks 'Do you love me?' Three times Peter says yes. Three times Jesus commissions him. Jesus restores completely — no guilt trip, no probation.",keyVerses:["John 20:16 — Jesus said to her, 'Mary.'","John 20:28 — Thomas said, 'My Lord and my God!'","John 20:31 — These are written that you may believe, and that by believing you may have life in his name."],questions:["Jesus called Mary by name. How does it feel that Jesus knows your name and pursues you personally?","Jesus didn't reject Thomas for his doubt. How should that change how we handle our own doubts?","Peter was restored after his greatest failure. What failure do you need to let Jesus restore you from?"]},
+    {day:23,passage:"Matthew 5:1–12",title:"The Beatitudes",focus:"Eight 'blessed are' statements that completely reverse the world's values. This is the DNA of life in the Kingdom of God.",teaching:"The Beatitudes are not a to-do list. They describe the person who has encountered the King. 'Blessed' means fully satisfied — it is a declaration of who is truly flourishing.\n\nEach beatitude has a paradox: the poor in spirit inherit the kingdom. The mourning are comforted. The meek inherit the earth. By the world's standards, these people are losers. By God's standard, they are the most blessed.\n\n'Poor in spirit' (v.3) is the foundation — knowing you have nothing to offer God. The one who knows they are spiritually bankrupt is first in line for the Kingdom.",keyVerses:["Matthew 5:3 — Blessed are the poor in spirit, for theirs is the kingdom of heaven.","Matthew 5:8 — Blessed are the pure in heart, for they will see God.","Matthew 5:9 — Blessed are the peacemakers, for they will be called children of God."],questions:["Which beatitude do you most need right now — and why?","Which beatitude is hardest for you to believe applies to you?","How does being 'poor in spirit' actually lead to inheriting the Kingdom?"]},
+    {day:24,passage:"Luke 4:14–30",title:"Jesus' Mission Statement",focus:"Jesus reads from Isaiah 61 and announces: this is about me. His hometown tries to kill Him for it.",teaching:"Jesus is handed the scroll of Isaiah and reads: 'The Spirit of the Lord is on me, because he has anointed me to proclaim good news to the poor.' Then He says: 'Today this scripture is fulfilled in your hearing.'\n\nThis is Jesus' mission statement. He came for the poor, the prisoners, the blind, the oppressed. Not the powerful, the comfortable, the religious elite.\n\nThe crowd loves it — until Jesus gives examples of Gentiles being healed while Jews were passed over. Their admiration turns to rage. Grace always offends those who think they deserve it.",keyVerses:["Luke 4:18 — The Spirit of the Lord is on me, because he has anointed me to proclaim good news to the poor.","Luke 4:21 — Today this scripture is fulfilled in your hearing.","Luke 4:30 — But he walked right through the crowd and went on his way."],questions:["Jesus defined His mission as good news to the poor and freedom for the oppressed. How does your life reflect that mission?","Why does grace offend people who think they already deserve God's favor?","Jesus walked calmly through the crowd that tried to kill Him. How does His calm in the face of rejection encourage you?"]},
+    {day:25,passage:"Mark 10:17–52",title:"Rich Man and Blind Beggar",focus:"Two encounters back to back: a rich young man who walks away from Jesus, and a blind beggar who won't stop calling out. The contrast is striking.",teaching:"The rich young ruler asks the right question: 'What must I do to inherit eternal life?' Jesus looks at him and loves him — then asks him to sell everything. The man leaves sad. His wealth was his real god.\n\nJesus says it is easier for a camel through the eye of a needle than for a rich person to enter the kingdom. 'Then who can be saved?' Jesus: 'With man this is impossible, but not with God.' Salvation is always a miracle.\n\nBlind Bartimaeus is told to be quiet. He cries louder. Jesus stops. 'What do you want me to do for you?' He heals him. The man with everything walks away; the man with nothing follows.",keyVerses:["Mark 10:21 — Jesus looked at him and loved him. 'One thing you lack...'","Mark 10:27 — With man this is impossible, but not with God; all things are possible with God.","Mark 10:51–52 — 'What do you want me to do for you?' 'Rabbi, I want to see.'"],questions:["What is the 'one thing' you lack — what is Jesus asking you to let go of?","What does Jesus' answer about salvation being impossible for man mean for how you think about your own?","Jesus asked Bartimaeus 'What do you want me to do for you?' If He asked you that right now, what would you say?"]},
+    {day:26,passage:"Luke 23:39–43",title:"The Thief on the Cross",focus:"In the final hours of His life, Jesus saves one more person — a dying criminal with nothing to offer. The most compressed conversion story in Scripture.",teaching:"Two criminals hang on either side of Jesus. One mocks: 'Save yourself and us!' The other rebukes him and turns to Jesus: 'Remember me when you come into your kingdom.'\n\nThis man had no time to be baptized, take communion, join a church, or do any good works. He had nothing to offer — only a prayer and a turning of his heart. Jesus answers: 'Today you will be with me in paradise.'\n\nThis story is the gospel in its most undiluted form. Salvation is entirely by grace through faith.",keyVerses:["Luke 23:42 — Jesus, remember me when you come into your kingdom.","Luke 23:43 — Truly I tell you, today you will be with me in paradise."],questions:["What does the thief's salvation tell us about what God actually requires?","He asked only to be 'remembered.' Jesus gave him paradise. How does God's generosity encourage you?","Is there someone you've written off as too far gone for God? How does this story challenge that?"]},
+    {day:27,passage:"John 20:1–18",title:"The Empty Tomb",focus:"The most important morning in history. The tomb is empty. Mary weeps in the garden — until Jesus says her name.",teaching:"John was there and writes with intense detail — the burial cloths lying neatly (a stolen body would not leave neat cloths), and John 'saw and believed' (20:8).\n\nMary stays at the tomb weeping after the disciples leave. Angels ask: 'Why are you weeping?' She is so consumed by grief she speaks to angels without registering who they are. She turns and sees Jesus — but doesn't recognize Him.\n\nOne word changes everything: 'Mary.' He says her name. She knows immediately. The risen Jesus — His first act is to find a grieving woman and speak her name with tenderness.",keyVerses:["John 20:11 — Mary stood outside the tomb crying.","John 20:16 — Jesus said to her, 'Mary.' She turned and cried out, 'Rabboni!'","John 20:17 — Go to my brothers and tell them, 'I am ascending to my Father and your Father.'"],questions:["Mary was so deep in grief she couldn't see Jesus nearby. Have you ever been there?","Jesus' first post-resurrection appearance was to a woman. What does that tell you about who Jesus values?","He called her 'Mary.' He calls you by name too. Sit with that — what does it mean for you?"]},
+    {day:28,passage:"Matthew 28:16–20",title:"The Great Commission",focus:"The final words of Matthew's Gospel. Jesus has all authority. His command: go make disciples. His promise: I am with you always.",teaching:"Matthew ends on a mountain — just as Moses received the law on a mountain, Jesus issues the new mandate. Jesus is the new Moses.\n\n'All authority in heaven and on earth has been given to me.' This is the foundation of the commission. We go because He has authority — not because we are bold or gifted. The command is not 'make converts' — it is 'make disciples.'\n\nThe promise: 'I am with you always, to the very end of the age.' Not 'I will come back.' Present tense. Always. This sustained every martyr, every missionary, every quiet saint for 2,000 years.",keyVerses:["Matthew 28:18 — All authority in heaven and on earth has been given to me.","Matthew 28:19–20 — Go and make disciples of all nations, teaching them to obey everything I have commanded.","Matthew 28:20 — Surely I am with you always, to the very end of the age."],questions:["If Jesus truly has all authority, what in your life needs to come under that authority?","Who is one person you could invest in as a disciple — not just invite to church, but walk alongside?","You have now read all four Gospels. How has your picture of Jesus changed or deepened over these 28 days?"]}
+  ]
+};
+
+// ── Storage ────────────────────────────────────────────────────────────────
+function getData() {
+  try { return JSON.parse(localStorage.getItem(PLAN.storageKey) || '{}'); } catch(e) { return {}; }
+}
+function saveData(d) {
+  try { localStorage.setItem(PLAN.storageKey, JSON.stringify(d)); } catch(e) {}
+}
+
+// Write to homepage calendar when a day is marked done
+function syncCalendar(isDone) {
+  var CAL_KEY = 'bsh-calendar-v1';
+  var calId = 'gospels';
+  try {
+    var cal = JSON.parse(localStorage.getItem(CAL_KEY) || '{}');
+    var t = new Date();
+    var iso = t.getFullYear() + '-' + (t.getMonth()+1<10?'0':'') + (t.getMonth()+1) + '-' + (t.getDate()<10?'0':'') + t.getDate();
+    if (!cal[iso]) cal[iso] = [];
+    var idx = cal[iso].indexOf(calId);
+    if (isDone && idx === -1) cal[iso].push(calId);
+    if (!isDone && idx !== -1) cal[iso].splice(idx, 1);
+    if (!cal[iso].length) delete cal[iso];
+    localStorage.setItem(CAL_KEY, JSON.stringify(cal));
+  } catch(e) {}
+}
+
+// ── State ──────────────────────────────────────────────────────────────────
+var currentDayIdx = 0;
+var confirmingDelete = null;
+
+// ── Views ──────────────────────────────────────────────────────────────────
+function showView(id) {
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function showList()    { renderList(); showView('viewList'); }
+function showHistory() { renderHistory(); showView('viewHistory'); }
+
+function showDay(idx) {
+  currentDayIdx = idx;
+  renderDay();
+  showView('viewDay');
+}
+
+// ── Render list ────────────────────────────────────────────────────────────
+function renderList() {
+  var data = getData();
+  var completed = data.completed || {};
+  var notes = data.notes || {};
+  var doneCount = Object.keys(completed).filter(function(k) { return completed[k]; }).length;
+  var total = PLAN.days.length;
+  var pct = Math.round(doneCount / total * 100);
+
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = doneCount + ' / ' + total + ' days completed';
+
+  var totalNotes = Object.values(notes).reduce(function(sum, arr) { return sum + (arr ? arr.length : 0); }, 0);
+  document.getElementById('notesCount').textContent = totalNotes + ' note' + (totalNotes !== 1 ? 's' : '') + ' \u203a';
+
+  var html = '';
+  PLAN.days.forEach(function(day, i) {
+    var done = !!completed[i];
+    var dayNotes = notes[i] || [];
+    html += '<div class="day-item' + (done ? ' done' : '') + '" onclick="showDay(' + i + ')">'
+      + '<div class="check-circle" onclick="event.stopPropagation();quickToggle(' + i + ')">' + (done ? '✓' : '') + '</div>'
+      + '<div class="day-info">'
+      + '<div class="day-num">Day ' + day.day + '</div>'
+      + '<div class="day-passage">' + day.passage + '</div>'
+      + '<div class="day-title">' + day.title + '</div>'
+      + '</div>'
+      + (dayNotes.length ? '<div class="note-badge">' + dayNotes.length + ' note' + (dayNotes.length > 1 ? 's' : '') + '</div>' : '')
+      + '</div>';
+  });
+  document.getElementById('dayList').innerHTML = html;
+}
+
+function quickToggle(idx) {
+  var data = getData();
+  if (!data.completed) data.completed = {};
+  data.completed[idx] = !data.completed[idx];
+  saveData(data);
+  syncCalendar(data.completed[idx]);
+  renderList();
+}
+
+// ── Render day ─────────────────────────────────────────────────────────────
+function renderDay() {
+  var data = getData();
+  var completed = data.completed || {};
+  var notes = data.notes || {};
+  var day = PLAN.days[currentDayIdx];
+  var done = !!completed[currentDayIdx];
+
+  document.getElementById('dayMeta').textContent = 'Day ' + day.day + ' of ' + PLAN.days.length;
+  document.getElementById('dayTitle').textContent = day.title;
+  document.getElementById('dayPassage').textContent = day.passage;
+  document.getElementById('dayFocus').textContent = day.focus;
+
+  var btn = document.getElementById('doneBtn');
+  btn.textContent = done ? '✓ Done' : 'Mark Done';
+  btn.className = 'done-btn' + (done ? ' is-done' : '');
+
+  // Teaching
+  var teachHTML = day.teaching.split('\n\n').map(function(p) {
+    return '<div class="teaching-para">' + p + '</div>';
+  }).join('');
+  document.getElementById('dayTeaching').innerHTML = teachHTML;
+
+  // Key verses
+  document.getElementById('dayVerses').innerHTML = day.keyVerses.map(function(v) {
+    return '<div class="verse-item">' + v + '</div>';
+  }).join('');
+
+  // Questions
+  document.getElementById('dayQuestions').innerHTML = day.questions.map(function(q, i) {
+    return '<div class="question-item"><div class="q-num">' + (i+1) + '</div><div class="q-text">' + q + '</div></div>';
+  }).join('');
+
+  // Notes
+  renderNotes();
+
+  // Nav buttons
+  document.getElementById('prevBtn').style.display = currentDayIdx > 0 ? 'block' : 'none';
+  document.getElementById('nextBtn').style.display = currentDayIdx < PLAN.days.length - 1 ? 'block' : 'none';
+
+  // Reset AI
+  document.getElementById('aiResult').innerHTML = '<div class="ai-placeholder">Tap "Get Insight" for cross-references, historical context & extra commentary.</div>';
+  document.getElementById('aiBtn').disabled = false;
+  document.getElementById('aiBtn').textContent = 'Get Insight';
+
+  // Reset note input
+  document.getElementById('noteInput').value = '';
+  confirmingDelete = null;
+}
+
+function renderNotes() {
+  var data = getData();
+  var dayNotes = (data.notes || {})[currentDayIdx] || [];
+  var html = '';
+  dayNotes.forEach(function(n, ni) {
+    html += '<div class="note-entry">'
+      + '<div class="note-text">' + escHtml(n.text) + '</div>'
+      + '<div class="note-meta"><span>' + n.date + '</span>'
+      + '<button class="note-delete" onclick="askDelete(' + ni + ')">🗑</button></div>'
+      + (confirmingDelete === ni
+        ? '<div class="confirm-delete"><span>Delete this note?</span>'
+          + '<button class="confirm-yes" onclick="doDelete(' + ni + ')">Delete</button>'
+          + '<button class="confirm-no" onclick="cancelDelete()">Cancel</button></div>'
+        : '')
+      + '</div>';
+  });
+  document.getElementById('notesList').innerHTML = html;
+}
+
+function askDelete(ni) { confirmingDelete = ni; renderNotes(); }
+function cancelDelete() { confirmingDelete = null; renderNotes(); }
+function doDelete(ni) {
+  var data = getData();
+  if (!data.notes) data.notes = {};
+  if (!data.notes[currentDayIdx]) data.notes[currentDayIdx] = [];
+  data.notes[currentDayIdx].splice(ni, 1);
+  saveData(data);
+  confirmingDelete = null;
+  renderNotes();
+}
+
+function saveNote() {
+  var text = document.getElementById('noteInput').value.trim();
+  if (!text) return;
+  var data = getData();
+  if (!data.notes) data.notes = {};
+  if (!data.notes[currentDayIdx]) data.notes[currentDayIdx] = [];
+  data.notes[currentDayIdx].push({ text: text, date: new Date().toLocaleString() });
+  saveData(data);
+  document.getElementById('noteInput').value = '';
+  confirmingDelete = null;
+  renderNotes();
+}
+
+function toggleDone() {
+  var data = getData();
+  if (!data.completed) data.completed = {};
+  data.completed[currentDayIdx] = !data.completed[currentDayIdx];
+  saveData(data);
+  syncCalendar(data.completed[currentDayIdx]);
+  renderDay();
+}
+
+function navDay(dir) {
+  currentDayIdx += dir;
+  renderDay();
+  window.scrollTo(0, 0);
+}
+
+// ── History ────────────────────────────────────────────────────────────────
+function renderHistory() {
+  var data = getData();
+  var notes = data.notes || {};
+  var all = [];
+  Object.keys(notes).forEach(function(idx) {
+    (notes[idx] || []).forEach(function(n, ni) {
+      all.push({ idx: parseInt(idx), ni: ni, note: n });
+    });
+  });
+  all.sort(function(a, b) { return new Date(b.note.date) - new Date(a.note.date); });
+
+  document.getElementById('historySubtitle').textContent = all.length + ' note' + (all.length !== 1 ? 's' : '') + ' across ' + PLAN.name;
+
+  if (!all.length) {
+    document.getElementById('historyList').innerHTML = '<div class="empty-state"><div class="e-icon">✍️</div><p>No notes yet.</p><p style="margin-top:6px;">Go into any day and save a note — it will appear here.</p></div>';
+    return;
+  }
+
+  document.getElementById('historyList').innerHTML = all.map(function(item) {
+    var day = PLAN.days[item.idx];
+    return '<div class="history-entry">'
+      + '<div class="history-day-link" onclick="showDay(' + item.idx + ')">Day ' + day.day + ' · ' + day.passage + ' — ' + day.title + ' \u203a</div>'
+      + '<div class="history-note-text">' + escHtml(item.note.text) + '</div>'
+      + '<div class="history-note-date"><span>' + item.note.date + '</span></div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── AI Insight ─────────────────────────────────────────────────────────────
+function getInsight() {
+  var day = PLAN.days[currentDayIdx];
+  var btn = document.getElementById('aiBtn');
+  btn.disabled = true;
+  btn.textContent = 'Loading...';
+  document.getElementById('aiResult').innerHTML = '<div class="ai-placeholder">Thinking...</div>';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: 'You are a warm Bible teacher. The student is studying ' + day.passage + ' — "' + day.title + '". Give 3–4 sentences of deeper insight: a cross-reference to another Scripture, a cultural or historical detail, and one personal application. Rich but accessible.' }]
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var text = (d.content && d.content[0] && d.content[0].text) || 'Could not load insight.';
+    document.getElementById('aiResult').innerHTML = '<div class="ai-result">' + escHtml(text) + '</div>';
+    btn.style.display = 'none';
+  })
+  .catch(function() {
+    document.getElementById('aiResult').innerHTML = '<div class="ai-placeholder">Could not load. Please try again.</div>';
+    btn.disabled = false;
+    btn.textContent = 'Try Again';
+  });
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+renderList();
+</script>
+</body>
+</html>
